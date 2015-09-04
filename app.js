@@ -8,6 +8,15 @@ myWeatherApp.service('cityService',function(){
     
 });
 
+myWeatherApp.service('weatherService',['$resource',function($resource){
+    
+    this.GetWeather = function(city, days){
+        var weatherAPI = $resource("http://api.openweathermap.org/data/2.5/forecast/daily",{ callback: "JSON_CALLBACK"}, {get: { method: "JSONP" }});
+        return weatherAPI.get({ q: city, cnt: days});
+    }
+    
+}]);
+
 //Controllers
 myWeatherApp.controller('homeController',['$scope', '$location', 'cityService', function($scope, $location, cityService){
     
@@ -23,14 +32,12 @@ myWeatherApp.controller('homeController',['$scope', '$location', 'cityService', 
     
 }]);
 
-myWeatherApp.controller('forecastController',['$scope', '$resource', '$routeParams', 'cityService', function($scope, $resource, $routeParams, cityService){
+myWeatherApp.controller('forecastController',['$scope', '$routeParams', 'cityService', 'weatherService', function($scope,  $routeParams, cityService, weatherService){
     
     $scope.city = cityService.city;
     $scope.days = $routeParams.days || '3';
     
-    $scope.weatherAPI = $resource("http://api.openweathermap.org/data/2.5/forecast/daily",{ callback: "JSON_CALLBACK"}, {get: { method: "JSONP" }});
-    
-    $scope.weatherResult = $scope.weatherAPI.get({ q: $scope.city, cnt: $scope.days});
+    $scope.weatherResult = weatherService.GetWeather($scope.city, $scope.days);
     
     $scope.convertToFahrenheit = function (degK){
         
